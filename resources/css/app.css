@@ -1,11 +1,331 @@
-@import 'tailwindcss';
+:root {
+  /* Editorial Palette */
+  --bg-main: #F4F4F0; /* Warm Alabaster/Off-White */
+  --bg-secondary: #EBEBE6; /* Slightly darker grey-beige */
+  --bg-contrast: #111111; /* Almost pitch black */
+  
+  --text-dark: #121212;
+  --text-light: #F4F4F0;
+  --text-muted: #666666;
+  
+  --accent-primary: #D34B32; /* Burnt Orange/Terracotta */
+  --accent-hover: #B53F28;
+  
+  --border-color: #111111; /* Strong high-contrast borders */
+  --border-light: rgba(17, 17, 17, 0.1);
 
-@source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
-@source '../../storage/framework/views/*.php';
-@source '../**/*.blade.php';
-@source '../**/*.js';
+  /* Typography */
+  --font-sans: 'Inter', system-ui, sans-serif;
+  --font-serif: 'Playfair Display', serif;
+  
+  /* Layout constraints */
+  --content-width: 1400px;
+  --sidebar-width: 350px;
+  
+  /* Transitions */
+  --transition-fast: 0.2s ease;
+  --transition-normal: 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
 
-@theme {
-    --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
-        'Segoe UI Symbol', 'Noto Color Emoji';
+/* =========================================================================
+   RESET & DEFAULTS
+   ========================================================================= */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  font-family: var(--font-sans);
+  background-color: var(--bg-main);
+  color: var(--text-dark);
+  line-height: 1.4;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  font-size: 16px;
+}
+
+body {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+  transition: color var(--transition-fast);
+}
+
+ul { list-style: none; }
+
+button {
+  border: none;
+  background: none;
+  cursor: pointer;
+  font-family: inherit;
+  color: inherit;
+}
+
+h1, h2, h3, h4, .serif {
+  font-family: var(--font-serif);
+  font-weight: 500;
+  letter-spacing: -0.02em;
+}
+
+::selection {
+  background-color: var(--text-dark);
+  color: var(--bg-main);
+}
+
+/* =========================================================================
+   UTILITIES & LAYOUT
+   ========================================================================= */
+
+/* A pure, uncentered full-width container restricted by padding */
+.layout-wrapper {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+/* We don't use typical centered containers. 
+   We stretch elements and use left/right padding */
+.px-edge {
+  padding-left: 5vw;
+  padding-right: 5vw;
+}
+
+.py-section {
+  padding-top: 8rem;
+  padding-bottom: 8rem;
+}
+
+.border-b-solid {
+  border-bottom: 2px solid var(--border-color);
+}
+
+.border-t-solid {
+  border-top: 2px solid var(--border-color);
+}
+
+.split-layout {
+  display: grid;
+  grid-template-columns: 1fr;
+  min-height: auto;
+}
+
+@media (min-width: 1024px) {
+  .split-layout {
+    grid-template-columns: 1.2fr 1fr;
+    min-height: calc(100vh - 100px); /* Fill screen minus nav */
+  }
+}
+
+.split-left {
+  padding: 4rem 5vw 4rem 5vw;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  border-right: 2px solid transparent;
+}
+
+@media (min-width: 1024px) {
+  .split-left {
+    border-right: 2px solid var(--border-color);
+    padding: 6rem 5vw 6rem 5vw;
+  }
+}
+
+.split-right {
+  padding: 4rem 5vw 4rem 5vw;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+/* Asymmetric lists & menus */
+.menu-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.menu-list-item {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: flex-end;
+  padding: 2rem 0;
+  border-bottom: 1px solid var(--border-color);
+  gap: 2rem;
+}
+
+.menu-list-item:first-child {
+  border-top: 2px solid var(--border-color);
+}
+
+/* =========================================================================
+   COMPONENTS
+   ========================================================================= */
+
+/* Navbar - Asymmetric, floating feel without borders */
+.navbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  height: 100px;
+  background-color: var(--bg-main);
+  border-bottom: 2px solid var(--border-color);
+}
+
+.nav-brand {
+  font-family: var(--font-serif);
+  font-size: 2rem;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+}
+
+.nav-actions {
+  display: flex;
+  align-items: center;
+  gap: 3rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* Hard, concrete buttons (Brutalist/Editorial) */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.25rem 2.5rem;
+  font-size: 1rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  transition: all var(--transition-fast);
+}
+
+.btn-solid {
+  background-color: var(--text-dark);
+  color: var(--text-light);
+  border: 2px solid var(--text-dark);
+}
+
+.btn-solid:hover {
+  background-color: var(--accent-primary);
+  border-color: var(--accent-primary);
+}
+
+.btn-outline {
+  background-color: transparent;
+  color: var(--text-dark);
+  border: 2px solid var(--border-color);
+}
+
+.btn-outline:hover {
+  background-color: var(--text-dark);
+  color: var(--text-light);
+}
+
+/* High Contrast Minimal Form Elements */
+.form-group {
+  margin-bottom: 2.5rem;
+}
+
+.form-label {
+  display: block;
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 0.75rem;
+  color: var(--text-dark);
+}
+
+.form-input {
+  width: 100%;
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid var(--border-color);
+  padding: 1rem 0;
+  font-size: 1.25rem;
+  color: var(--text-dark);
+  outline: none;
+  border-radius: 0;
+  transition: border-color var(--transition-fast);
+}
+
+.form-input:focus {
+  border-bottom-color: var(--accent-primary);
+}
+
+.form-input::placeholder {
+  color: var(--text-muted);
+  font-weight: 300;
+}
+
+/* Specifically for quantity fields in F&B */
+.qty-input {
+  width: 60px;
+  background: transparent;
+  border: 1px solid var(--border-color);
+  padding: 0.5rem;
+  text-align: center;
+  font-size: 1.2rem;
+  font-family: inherit;
+}
+
+/* Footer - huge typography minimal */
+.footer {
+  background-color: var(--text-dark);
+  color: var(--text-light);
+  padding-top: 6rem;
+  padding-bottom: 4rem;
+  margin-top: auto;
+}
+
+.footer-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 4rem;
+}
+
+@media (min-width: 1024px) {
+  .footer-grid {
+    grid-template-columns: 2fr 1fr 1fr;
+  }
+}
+
+.footer-heading {
+  font-family: var(--font-serif);
+  font-size: clamp(3rem, 5vw, 6rem);
+  line-height: 1;
+  margin-bottom: 1rem;
+}
+
+.footer-link {
+  display: block;
+  font-size: 1rem;
+  margin-bottom: 1rem;
+  opacity: 0.7;
+  transition: opacity var(--transition-fast);
+}
+
+.footer-link:hover {
+  opacity: 1;
+}
+
+/* Huge Headline Typography Utility */
+.headline-giant {
+  font-size: clamp(4rem, 8vw, 10rem);
+  line-height: 0.95;
+  color: var(--text-dark);
+}
+
+.text-accent {
+  color: var(--accent-primary);
 }

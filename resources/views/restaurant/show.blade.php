@@ -1,69 +1,69 @@
 @extends('layouts.app')
 
-@section('title', $restaurant->name . ' - Menu')
+@section('title', $restaurant->name . ' - Buku Menu')
 
 @section('content')
-    <div class="max-w-4xl mx-auto px-4 py-12">
-        <div class="text-center mb-12">
-            <h1 class="text-4xl font-extrabold text-slate-900 mb-3">{{ $restaurant->name }}</h1>
-            <p class="text-slate-500 text-lg">{{ $restaurant->description }}</p>
-        </div>
+    <form action="{{ route('order.store', $restaurant->id) }}" method="POST">
+        @csrf
+        <div class="split-layout">
+            <!-- Left Header Identity & Order Form -->
+            <div class="split-left" style="justify-content: flex-start; padding-top: 6rem;">
+                <span class="text-accent" style="display: block; text-transform: uppercase; letter-spacing: 0.15em; font-size: 0.85rem; font-weight: 600; margin-bottom: 1.5rem;">
+                    Buku Menu Artisanal
+                </span>
+                <h1 class="serif" style="font-size: clamp(3.5rem, 6vw, 5rem); line-height: 1.1; margin-bottom: 2rem;">
+                    {{ $restaurant->name }}
+                </h1>
+                <p style="font-size: 1.2rem; color: var(--text-muted); max-width: 400px; line-height: 1.6; margin-bottom: 4rem;">
+                    {{ $restaurant->description }}
+                </p>
 
-        <form action="{{ route('order.store', $restaurant->id) }}" method="POST">
-            @csrf
-
-            <div
-                class="bg-white p-6 md:p-8 rounded-2xl shadow-sm border border-slate-200 mb-10 grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                    <label class="block text-sm font-semibold text-slate-700 mb-2">Nama Pemesan</label>
-                    <input type="text" name="customer_name" required
-                        class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
-                        placeholder="Masukkan nama Anda">
-                </div>
-                <div>
-                    <label class="block text-sm font-semibold text-slate-700 mb-2">Nomor Meja</label>
-                    <input type="text" name="table_number" required
-                        class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
-                        placeholder="Contoh: 12">
-                </div>
-            </div>
-
-            <div class="flex justify-between items-end mb-6">
-                <h2 class="text-2xl font-bold text-slate-800">Daftar Menu</h2>
-            </div>
-
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-10">
-                @foreach ($restaurant->menus as $menu)
-                    <div
-                        class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 flex flex-col justify-between hover:border-indigo-300 transition-all">
-                        <div>
-                            <h3 class="font-bold text-slate-800 text-lg">{{ $menu->name }}</h3>
-                            <p class="text-slate-500 text-sm mt-1 mb-3 line-clamp-2">{{ $menu->description }}</p>
-                            <p class="text-indigo-600 font-bold text-lg">Rp{{ number_format($menu->price, 0, ',', '.') }}
-                            </p>
-                        </div>
-
-                        <div class="mt-5 pt-4 border-t border-slate-100 flex items-center justify-between">
-                            <span class="text-sm font-medium text-slate-600">Jumlah:</span>
-                            <input type="hidden" name="items[{{ $loop->index }}][menu_id]" value="{{ $menu->id }}">
-                            <input type="hidden" name="items[{{ $loop->index }}][price]" value="{{ $menu->price }}">
-                            <input type="number" name="items[{{ $loop->index }}][quantity]" value="0" min="0"
-                                class="w-20 text-center px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none font-semibold">
-                        </div>
+                <!-- Identitas Pesanan diletakkan di sisi kiri bawah -->
+                <div style="background-color: var(--bg-secondary); padding: 3rem; border: 2px solid var(--border-color);">
+                    <h3 class="serif" style="font-size: 1.5rem; margin-bottom: 2rem;">Detail Meja</h3>
+                    <div class="form-group">
+                        <label class="form-label">Nama Pelanggan Yth.</label>
+                        <input type="text" name="customer_name" required class="form-input" style="border-bottom-color: var(--border-color); background: transparent;" placeholder="Nama lengkap">
                     </div>
-                @endforeach
+                    <div class="form-group" style="margin-bottom: 0;">
+                        <label class="form-label">Nomor / Kode Meja</label>
+                        <input type="text" name="table_number" required class="form-input" style="border-bottom-color: var(--border-color); background: transparent; font-size: 2rem;" placeholder="01">
+                    </div>
+                </div>
             </div>
 
-            <div class="flex justify-end">
-                <button type="submit"
-                    class="w-full md:w-auto bg-slate-900 hover:bg-slate-800 text-white font-bold py-4 px-12 rounded-xl text-lg transition-colors shadow-lg flex items-center justify-center gap-2">
-                    Proses Pesanan
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3">
-                        </path>
-                    </svg>
+            <!-- Right Side Menu Items (List format, not grid) -->
+            <div class="split-right" style="border-left: 2px solid var(--border-color); padding-top: 6rem; padding-bottom: 8rem; justify-content: flex-start;">
+                <div style="display: flex; justify-content: space-between; align-items: flex-end; border-bottom: 2px solid var(--border-color); padding-bottom: 1.5rem; margin-bottom: 1.5rem;">
+                    <span style="font-size: 0.85rem; text-transform: uppercase; font-weight: 600; letter-spacing: 0.1em;">Daftar Hidangan</span>
+                    <span style="font-size: 0.85rem; text-transform: uppercase; font-weight: 600; letter-spacing: 0.1em; color: var(--text-muted);">Harga & Kuantitas</span>
+                </div>
+
+                <div class="menu-list" style="margin-bottom: 4rem;">
+                    @foreach ($restaurant->menus as $menu)
+                        <div class="menu-list-item">
+                            <div style="padding-right: 2rem;">
+                                <h3 class="serif" style="font-size: 1.75rem; color: var(--text-dark); margin-bottom: 0.5rem;">{{ $menu->name }}</h3>
+                                <p style="color: var(--text-muted); font-size: 1rem; line-height: 1.6; max-width: 450px;">
+                                    {{ $menu->description }}
+                                </p>
+                            </div>
+                            <div style="text-align: right; display: flex; flex-direction: column; align-items: flex-end;">
+                                <span style="font-size: 1.25rem; font-weight: 600; display: block; margin-bottom: 1rem;">
+                                    Rp{{ number_format($menu->price, 0, ',', '.') }}
+                                </span>
+                                <input type="hidden" name="items[{{ $loop->index }}][menu_id]" value="{{ $menu->id }}">
+                                <input type="hidden" name="items[{{ $loop->index }}][price]" value="{{ $menu->price }}">
+                                <input type="number" name="items[{{ $loop->index }}][quantity]" value="0" min="0" class="qty-input">
+                            </div>
+                        </div>
+                    @endforeach
+                </div>
+
+                <button type="submit" class="btn btn-solid" style="width: 100%; padding: 1.5rem; font-size: 1.1rem;">
+                    Siapkan Pesanan Terpilih
                 </button>
             </div>
-        </form>
-    </div>
+        </div>
+    </form>
 @endsection

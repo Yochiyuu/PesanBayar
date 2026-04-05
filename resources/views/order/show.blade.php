@@ -1,70 +1,69 @@
 @extends('layouts.app')
 
-@section('title', 'Invoice Pesanan #' . $order->id)
+@section('title', 'Tanda Terima #' . $order->id)
 
 @section('content')
-    <div class="max-w-md mx-auto w-full my-16 px-4">
-        <div class="bg-white rounded-3xl shadow-lg border border-slate-200 overflow-hidden">
-            <div class="bg-emerald-500 p-8 text-center text-white">
-                <div class="inline-flex items-center justify-center w-16 h-16 bg-white/20 rounded-full mb-4">
-                    <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
-                    </svg>
+    <div class="split-layout">
+        <!-- Huge thank you text left side -->
+        <div class="split-left" style="background-color: var(--text-dark); color: var(--text-light); justify-content: center;">
+            <span style="display: block; font-size: 0.85rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.2em; color: var(--text-muted); margin-bottom: 2rem;">
+                Status: Diproses
+            </span>
+            <h1 class="serif" style="font-size: clamp(3.5rem, 6vw, 6rem); line-height: 1.1;">
+                Pesanan <br>
+                <i style="color: var(--accent-primary);">Diterima.</i>
+            </h1>
+            <p style="font-size: 1.2rem; opacity: 0.7; margin-top: 2rem; max-width: 400px; line-height: 1.6;">
+                Dapur kami sedang menyiapkan mahakarya kuliner untuk Anda. Staf kami akan segera mengantarkannya ke meja Anda.
+            </p>
+        </div>
+        
+        <!-- Elegant receipt right side -->
+        <div class="split-right" style="justify-content: center; background-color: var(--bg-main);">
+            <div style="max-width: 450px; width: 100%; border: 2px solid var(--border-color); padding: 3rem; background-color: #fff;">
+                
+                <div style="text-align: center; border-bottom: 2px solid var(--border-color); padding-bottom: 2rem; margin-bottom: 2rem;">
+                    <h2 class="serif" style="font-size: 1.75rem;">Tanda Terima</h2>
+                    <p style="font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-muted); margin-top: 0.5rem;">Ticket #{{ str_pad($order->id, 4, '0', STR_PAD_LEFT) }}</p>
                 </div>
-                <h1 class="text-2xl font-bold mb-1">Pesanan Diterima!</h1>
-                <p class="text-emerald-100 text-sm">Menunggu proses pembayaran.</p>
-            </div>
 
-            <div class="p-8">
-                <div class="flex justify-between items-center mb-6 pb-6 border-b border-slate-100 border-dashed">
+                <div style="display: flex; justify-content: space-between; margin-bottom: 3rem;">
                     <div>
-                        <p class="text-sm text-slate-500 mb-1">Pemesan</p>
-                        <p class="font-bold text-slate-800">{{ $order->customer_name }}</p>
+                        <span style="display: block; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-muted); margin-bottom: 0.25rem;">Pemesan</span>
+                        <strong style="font-size: 1.1rem;">{{ $order->customer_name }}</strong>
                     </div>
-                    <div class="text-right">
-                        <p class="text-sm text-slate-500 mb-1">Meja</p>
-                        <p class="font-bold text-slate-800 text-xl">{{ $order->table_number }}</p>
+                    <div style="text-align: right;">
+                        <span style="display: block; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-muted); margin-bottom: 0.25rem;">Meja</span>
+                        <strong style="font-size: 1.5rem; color: var(--accent-primary);">{{ $order->table_number }}</strong>
                     </div>
                 </div>
 
-                <div class="mb-8">
-                    <h3 class="text-sm font-bold text-slate-400 mb-4 uppercase tracking-wider">Ringkasan Pesanan</h3>
-                    <div class="space-y-4">
-                        @foreach ($order->orderItems as $item)
-                            <div class="flex justify-between items-start">
-                                <div class="flex gap-3">
-                                    <div class="bg-slate-100 text-slate-600 font-bold px-2.5 py-1 rounded-md text-sm h-fit">
-                                        {{ $item->quantity }}x</div>
-                                    <div>
-                                        <p class="font-semibold text-slate-800">{{ $item->menu->name }}</p>
-                                        <p class="text-xs text-slate-500 mt-0.5">@
-                                            Rp{{ number_format($item->price, 0, ',', '.') }}</p>
-                                    </div>
+                <div style="margin-bottom: 2rem;">
+                    <span style="display: block; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-muted); border-bottom: 1px solid var(--border-color); padding-bottom: 0.5rem; margin-bottom: 1rem;">
+                        Rincian Pesanan
+                    </span>
+                    
+                    @foreach ($order->orderItems as $item)
+                        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem;">
+                            <div style="display: flex; gap: 1rem;">
+                                <span style="font-weight: 600; width: 20px;">{{ $item->quantity }}</span>
+                                <div>
+                                    <span style="display: block; font-weight: 500;">{{ $item->menu->name }}</span>
+                                    <span style="font-size: 0.85rem; color: var(--text-muted);">@ Rp{{ number_format($item->price, 0, ',', '.') }}</span>
                                 </div>
-                                <p class="font-semibold text-slate-800">
-                                    Rp{{ number_format($item->price * $item->quantity, 0, ',', '.') }}</p>
                             </div>
-                        @endforeach
-                    </div>
+                            <span style="font-weight: 600;">Rp{{ number_format($item->price * $item->quantity, 0, ',', '.') }}</span>
+                        </div>
+                    @endforeach
                 </div>
 
-                <div class="border-t-2 border-slate-800 border-dashed pt-5 mb-8">
-                    <div class="flex justify-between items-center">
-                        <p class="font-bold text-slate-800">Total Tagihan</p>
-                        <p class="font-black text-2xl text-indigo-600">
-                            Rp{{ number_format($order->total_price, 0, ',', '.') }}</p>
-                    </div>
+                <div style="border-top: 2px solid var(--border-color); padding-top: 1.5rem; margin-bottom: 3rem; display: flex; justify-content: space-between; align-items: center;">
+                    <span style="font-weight: 600; text-transform: uppercase; letter-spacing: 0.1em;">Total Bersih</span>
+                    <strong style="font-size: 1.5rem;">Rp{{ number_format($order->total_price, 0, ',', '.') }}</strong>
                 </div>
 
-                <button
-                    class="w-full bg-slate-900 hover:bg-slate-800 text-white font-bold py-4 rounded-xl text-center transition-all flex items-center justify-center gap-2">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z">
-                        </path>
-                    </svg>
-                    Bayar Sekarang
-                </button>
+                <button class="btn btn-solid" style="width: 100%;">Tuntaskan Tagihan</button>
+                
             </div>
         </div>
     </div>
