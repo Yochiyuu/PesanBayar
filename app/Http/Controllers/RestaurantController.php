@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Models\Restaurant;
-use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 
@@ -21,10 +20,7 @@ class RestaurantController extends Controller
             'description' => 'nullable|string',
         ]);
 
-        $user = User::first(); 
-
-        $restaurant = Restaurant::create([
-            'user_id' => $user->id,
+        $restaurant = $request->user()->restaurant()->create([
             'name' => $request->name,
             'slug' => Str::slug($request->name) . '-' . substr(uniqid(), -4), 
             'description' => $request->description,
