@@ -21,13 +21,25 @@ class MenuController extends Controller
         return view('menu.index', compact('menus'));
     }
 
-    public function create()
+    public function create(Request $request)
     {
+        $restaurant = $request->user()->restaurant;
+        
+        if (!$restaurant) {
+            return redirect()->route('restaurant.create');
+        }
+
         return view('menu.create');
     }
 
     public function store(Request $request)
     {
+        $restaurant = $request->user()->restaurant;
+        
+        if (!$restaurant) {
+            return redirect()->route('restaurant.create');
+        }
+
         $request->validate([
             'name' => 'required|string|max:255',
             'description' => 'nullable|string',
@@ -40,7 +52,7 @@ class MenuController extends Controller
             $imagePath = $request->file('image')->store('menus', 'public');
         }
 
-        $request->user()->restaurant->menus()->create([
+        $restaurant->menus()->create([
             'name' => $request->name,
             'description' => $request->description,
             'price' => $request->price,
@@ -51,13 +63,25 @@ class MenuController extends Controller
         return redirect()->route('menu.index');
     }
 
-    public function edit(Menu $menu)
+    public function edit(Request $request, Menu $menu)
     {
+        $restaurant = $request->user()->restaurant;
+
+        if (!$restaurant || $menu->restaurant_id !== $restaurant->id) {
+            abort(403, 'Unauthorized action.');
+        }
+
         return view('menu.edit', compact('menu'));
     }
 
     public function update(Request $request, Menu $menu)
     {
+        $restaurant = $request->user()->restaurant;
+
+        if (!$restaurant || $menu->restaurant_id !== $restaurant->id) {
+            abort(403, 'Unauthorized action.');
+        }
+
         $request->validate([
             'name' => 'required|string|max:255',
             'description' => 'nullable|string',
@@ -80,8 +104,14 @@ class MenuController extends Controller
         return redirect()->route('menu.index');
     }
 
-    public function destroy(Menu $menu)
+    public function destroy(Request $request, Menu $menu)
     {
+        $restaurant = $request->user()->restaurant;
+
+        if (!$restaurant || $menu->restaurant_id !== $restaurant->id) {
+            abort(403, 'Unauthorized action.');
+        }
+
         if ($menu->image) {
             Storage::disk('public')->delete($menu->image);
         }
