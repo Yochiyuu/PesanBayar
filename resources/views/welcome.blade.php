@@ -39,7 +39,7 @@
         </div>
     </nav>
 
-    <main class="w-full flex-grow flex flex-col lg:flex-row">
+    <main class="w-full flex-grow flex flex-col lg:flex-row min-h-[calc(100vh-4rem)]">
         <div class="w-full lg:w-1/2 flex justify-start items-center bg-white p-6 lg:p-12">
             <img src="{{ asset('images/test.png') }}" alt="Ilustrasi PesanBayar" class="w-full h-auto object-contain">
         </div>

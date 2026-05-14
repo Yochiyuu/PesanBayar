@@ -5,61 +5,54 @@ namespace App\Http\Controllers;
 use App\Models\Order;
 use App\Models\OrderItem;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class OrderController extends Controller
 {
     public function store(Request $request, $restaurant_id)
     {
-        $request->validate([
-            'customer_name' => 'required|string|max:255',
-            'table_number' => 'required|string|max:10',
-            'items' => 'required|array',
-            'items.*.menu_id' => 'required|exists:menus,id',
-            'items.*.quantity' => 'required|integer|min:0',
-            'items.*.price' => 'required|integer|min:0',
-        ]);
+        $cart = session()->get('cart');
 
-        $totalPrice = 0;
-        $hasItems = false;
-
-        foreach ($request->items as $item) {
-            if ($item['quantity'] > 0) {
-                $totalPrice += ($item['price'] * $item['quantity']);
-                $hasItems = true;
-            }
+        if (!$cart) {
+            return redirect()->back()->with('error', 'Keranjang kosong.');
         }
 
-        if (!$hasItems) {
-            return back();
-        }
+        DB::beginTransaction();
 
-        $order = Order::create([
-            'restaurant_id' => $restaurant_id,
-            'customer_name' => $request->customer_name,
-            'table_number' => $request->table_number,
-            'total_price' => $totalPrice,
-            'payment_status' => 'unpaid',
-            'order_status' => 'pending',
-        ]);
+        try {
+            $order = Order::create([
+                'restaurant_id' => $restaurant_id,
+                'customer_name' => $request->customer_name,
+                'table_number' => $request->table_number,
+                'total_price' => array_sum(array_map(fn($item) => $item['price'] * $item['quantity'], $cart)),
+                'payment_status' => 'pending',
+                'order_status' => 'waiting',
+            ]);
 
-        foreach ($request->items as $item) {
-            if ($item['quantity'] > 0) {
+            foreach ($cart as $menu_id => $details) {
                 OrderItem::create([
                     'order_id' => $order->id,
-                    'menu_id' => $item['menu_id'],
-                    'quantity' => $item['quantity'],
-                    'price' => $item['price'],
+                    'menu_id' => $menu_id,
+                    'quantity' => $details['quantity'],
+                    'price' => $details['price'],
                 ]);
             }
-        }
 
-        return redirect()->route('order.show', $order->id);
+            DB::commit();
+
+            session()->forget('cart');
+
+            return redirect()->route('order.show', $order->id)->with('success', 'Pesanan berhasil dibuat!');
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return redirect()->back()->with('error', 'Gagal memproses pesanan.');
+        }
     }
 
     public function show($id)
     {
-        $order = Order::with('orderItems.menu')->findOrFail($id);
-
+        $order = Order::with('items.menu')->findOrFail($id);
         return view('order.show', compact('order'));
     }
 }

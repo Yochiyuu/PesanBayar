@@ -4,120 +4,55 @@ namespace App\Http\Controllers;
 
 use App\Models\Menu;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
 
 class MenuController extends Controller
 {
-    public function index(Request $request)
-    {
-        $restaurant = $request->user()->restaurant;
-        
-        if (!$restaurant) {
-            return redirect()->route('restaurant.create');
-        }
-
-        $menus = $restaurant->menus;
-        
-        return view('menu.index', compact('menus'));
-    }
-
-    public function create(Request $request)
-    {
-        $restaurant = $request->user()->restaurant;
-        
-        if (!$restaurant) {
-            return redirect()->route('restaurant.create');
-        }
-
-        return view('menu.create');
-    }
-
     public function store(Request $request)
     {
-        $restaurant = $request->user()->restaurant;
-        
-        if (!$restaurant) {
-            return redirect()->route('restaurant.create');
-        }
-
         $request->validate([
             'name' => 'required|string|max:255',
-            'description' => 'nullable|string',
             'price' => 'required|integer|min:0',
-            'image' => 'nullable|image|max:2048',
+            'description' => 'nullable|string',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
         ]);
+
+        $restaurant = $request->user()->restaurant;
+
+        if (!$restaurant) {
+            return back()->with('error', 'Buat restoran terlebih dahulu.');
+        }
 
         $imagePath = null;
         if ($request->hasFile('image')) {
             $imagePath = $request->file('image')->store('menus', 'public');
         }
 
-        $restaurant->menus()->create([
+        Menu::create([
+            'restaurant_id' => $restaurant->id,
             'name' => $request->name,
-            'description' => $request->description,
             'price' => $request->price,
+            'description' => $request->description,
             'image' => $imagePath,
-            'is_available' => $request->has('is_available'),
+            'is_available' => true,
         ]);
 
-        return redirect()->route('menu.index');
+        return back()->with('success', 'Menu berhasil ditambahkan!');
     }
 
-    public function edit(Request $request, Menu $menu)
+    public function index(Request $request)
     {
+        // Ambil data resto punya user yang lagi login
         $restaurant = $request->user()->restaurant;
 
-        if (!$restaurant || $menu->restaurant_id !== $restaurant->id) {
-            abort(403, 'Unauthorized action.');
+        // Kalau dia belum bikin resto, lempar ke halaman daftar resto
+        if (!$restaurant) {
+            return redirect()->route('restaurant.create')->with('info', 'Silakan buat restoran Anda terlebih dahulu sebelum mengelola menu.');
         }
 
-        return view('menu.edit', compact('menu'));
-    }
+        // Ambil semua menu milik resto tersebut
+        $menus = $restaurant->menus;
 
-    public function update(Request $request, Menu $menu)
-    {
-        $restaurant = $request->user()->restaurant;
-
-        if (!$restaurant || $menu->restaurant_id !== $restaurant->id) {
-            abort(403, 'Unauthorized action.');
-        }
-
-        $request->validate([
-            'name' => 'required|string|max:255',
-            'description' => 'nullable|string',
-            'price' => 'required|integer|min:0',
-            'image' => 'nullable|image|max:2048',
-        ]);
-
-        $data = $request->only(['name', 'description', 'price']);
-        $data['is_available'] = $request->has('is_available');
-
-        if ($request->hasFile('image')) {
-            if ($menu->image) {
-                Storage::disk('public')->delete($menu->image);
-            }
-            $data['image'] = $request->file('image')->store('menus', 'public');
-        }
-
-        $menu->update($data);
-
-        return redirect()->route('menu.index');
-    }
-
-    public function destroy(Request $request, Menu $menu)
-    {
-        $restaurant = $request->user()->restaurant;
-
-        if (!$restaurant || $menu->restaurant_id !== $restaurant->id) {
-            abort(403, 'Unauthorized action.');
-        }
-
-        if ($menu->image) {
-            Storage::disk('public')->delete($menu->image);
-        }
-        
-        $menu->delete();
-
-        return redirect()->route('menu.index');
+        // Tampilkan ke halaman view menu.index
+        return view('menu.index', compact('menus', 'restaurant'));
     }
 }

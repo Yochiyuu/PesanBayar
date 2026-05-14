@@ -6,11 +6,17 @@ use App\Models\Restaurant;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 
+// PASTIKAN BARIS INI ADA AGAR View::make BISA DIGUNAKAN
+use Illuminate\Support\Facades\View; 
+
 class RestaurantController extends Controller
 {
-    public function create()
+    public function create(Request $request)
     {
-        return view('restaurant.create');
+        if ($request->user()->restaurant) {
+            return redirect()->route('dashboard')->with('info', 'Anda sudah memiliki restoran.');
+        }
+        return View::make('restaurant.create');
     }
 
     public function store(Request $request)
@@ -20,21 +26,21 @@ class RestaurantController extends Controller
             'description' => 'nullable|string',
         ]);
 
-        $restaurant = $request->user()->restaurant()->create([
+        Restaurant::create([
+            'user_id' => $request->user()->id, 
             'name' => $request->name,
-            'slug' => Str::slug($request->name) . '-' . substr(uniqid(), -4), 
+            'slug' => Str::slug($request->name) . '-' . uniqid(),
             'description' => $request->description,
         ]);
 
-        return redirect()->route('restaurant.show', $restaurant->slug);
+        return redirect()->route('dashboard')->with('success', 'Restoran berhasil didaftarkan!');
     }
-
-    public function show($slug)
+    
+    public function show(string $slug) 
     {
-        $restaurant = Restaurant::with(['menus' => function($query) {
-            $query->where('is_available', true);
-        }])->where('slug', $slug)->firstOrFail();
-
-        return view('restaurant.show', compact('restaurant'));
+        // PENTING: Tambahkan ->query() agar Intelephense mengerti
+        $restaurant = Restaurant::query()->where('slug', $slug)->with('menus')->firstOrFail();
+        
+        return View::make('restaurant.show', compact('restaurant'));
     }
 }

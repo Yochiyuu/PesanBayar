@@ -16,13 +16,13 @@ class OrderItem extends Model
         'price',
     ];
 
-    public function menu()
-    {
-        return $this->belongsTo(Menu::class);
-    }
-
-    public function order()
+public function order()
     {
         return $this->belongsTo(Order::class);
+    }
+
+public function menu()
+    {
+        return $this->belongsTo(Menu::class);
     }
 }
