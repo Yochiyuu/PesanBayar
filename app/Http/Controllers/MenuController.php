@@ -7,6 +7,34 @@ use Illuminate\Http\Request;
 
 class MenuController extends Controller
 {
+    public function index(Request $request)
+    {
+        // Ambil data resto punya user yang lagi login
+        $restaurant = $request->user()->restaurant;
+
+        // Kalau dia belum bikin resto, lempar ke halaman daftar resto
+        if (!$restaurant) {
+            return redirect()->route('restaurant.create')->with('info', 'Silakan buat restoran Anda terlebih dahulu sebelum mengelola menu.');
+        }
+
+        // Ambil semua menu milik resto tersebut
+        $menus = $restaurant->menus;
+
+        // Tampilkan ke halaman view menu.index
+        return view('menu.index', compact('menus', 'restaurant'));
+    }
+
+    public function create(Request $request)
+    {
+        $restaurant = $request->user()->restaurant;
+
+        if (!$restaurant) {
+            return redirect()->route('restaurant.create')->with('info', 'Silakan buat restoran Anda terlebih dahulu sebelum menambah menu.');
+        }
+
+        return view('menu.create');
+    }
+
     public function store(Request $request)
     {
         $request->validate([
@@ -36,23 +64,6 @@ class MenuController extends Controller
             'is_available' => true,
         ]);
 
-        return back()->with('success', 'Menu berhasil ditambahkan!');
-    }
-
-    public function index(Request $request)
-    {
-        // Ambil data resto punya user yang lagi login
-        $restaurant = $request->user()->restaurant;
-
-        // Kalau dia belum bikin resto, lempar ke halaman daftar resto
-        if (!$restaurant) {
-            return redirect()->route('restaurant.create')->with('info', 'Silakan buat restoran Anda terlebih dahulu sebelum mengelola menu.');
-        }
-
-        // Ambil semua menu milik resto tersebut
-        $menus = $restaurant->menus;
-
-        // Tampilkan ke halaman view menu.index
-        return view('menu.index', compact('menus', 'restaurant'));
+        return redirect()->route('menu.index')->with('success', 'Menu berhasil ditambahkan!');
     }
 }
