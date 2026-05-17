@@ -9,11 +9,14 @@ class Restaurant extends Model
 {
     use HasFactory;
 
+    // Tambahkan 'banner' dan 'is_open' di sini agar bisa disimpan ke database
     protected $fillable = [
         'user_id',
         'name',
         'slug',
         'description',
+        'banner',
+        'is_open',
     ];
 
     public function user()
@@ -24,10 +27,5 @@ class Restaurant extends Model
     public function menus()
     {
         return $this->hasMany(Menu::class);
-    }
-
-    public function orders()
-    {
-        return $this->hasMany(Order::class);
     }
 }

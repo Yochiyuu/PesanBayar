@@ -9,11 +9,13 @@ class Menu extends Model
 {
     use HasFactory;
 
+    // Tambahkan 'category' di sini
     protected $fillable = [
         'restaurant_id',
         'name',
-        'description',
+        'category',
         'price',
+        'description',
         'image',
         'is_available',
     ];

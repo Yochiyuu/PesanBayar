@@ -11,49 +11,60 @@
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 
-<body class="font-sans antialiased bg-white flex flex-col min-h-screen">
+<body class="font-sans antialiased bg-gray-50 flex flex-col min-h-screen">
 
     @include('layouts.navigation')
 
     @isset($header)
-        <header class="bg-white border-b border-gray-100">
+        <header class="bg-white border-b border-gray-100 shadow-sm">
             <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
                 {{ $header }}
             </div>
         </header>
     @endisset
 
-    <main class="flex-grow">
+    <main class="flex-grow w-full">
         {{ $slot }}
     </main>
 
-    <footer class="w-full bg-gray-900 pt-16 pb-8 border-t border-gray-800">
+    <footer class="w-full bg-gray-900 pt-16 pb-8 border-t border-gray-800 mt-auto">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="grid grid-cols-1 md:grid-cols-4 gap-12 mb-12">
                 <div class="col-span-1 md:col-span-2">
-                    <span class="text-3xl text-orange-500 tracking-tight block mb-4">PesanBayar</span>
+                    <span class="font-semibold text-3xl text-orange-500 tracking-tight block mb-4">PesanBayar</span>
                     <p class="text-gray-400 text-sm leading-relaxed max-w-sm">
                         Solusi modern pemesanan makanan berbasis QR Code. Tingkatkan efisiensi restoran Anda dan berikan
                         pengalaman terbaik bagi pelanggan tanpa perlu antre.
                     </p>
                 </div>
+
                 <div>
-                    <h3 class="text-white mb-4 tracking-wide">Perusahaan</h3>
+                    <h3 class="text-white font-semibold mb-4 tracking-wide">Perusahaan</h3>
                     <ul class="space-y-3 text-sm text-gray-400">
                         <li><a href="#" class="hover:text-orange-500 transition">Tentang Kami</a></li>
                         <li><a href="#" class="hover:text-orange-500 transition">Fitur & Harga</a></li>
+                        <li><a href="#" class="hover:text-orange-500 transition">Karir</a></li>
                     </ul>
                 </div>
+
                 <div>
-                    <h3 class="text-white mb-4 tracking-wide">Dukungan</h3>
+                    <h3 class="text-white font-semibold mb-4 tracking-wide">Dukungan</h3>
                     <ul class="space-y-3 text-sm text-gray-400">
                         <li><a href="#" class="hover:text-orange-500 transition">Pusat Bantuan</a></li>
+                        <li><a href="#" class="hover:text-orange-500 transition">Syarat & Ketentuan</a></li>
                         <li><a href="#" class="hover:text-orange-500 transition">Kebijakan Privasi</a></li>
                     </ul>
                 </div>
             </div>
-            <div class="border-t border-gray-800 pt-8 text-sm text-gray-500">
+
+            <div
+                class="border-t border-gray-800 pt-8 flex flex-col md:flex-row justify-between items-center text-sm text-gray-500">
                 <p>&copy; {{ date('Y') }} PesanBayar. Hak cipta dilindungi.</p>
+                <div class="flex space-x-6 mt-4 md:mt-0">
+                    <a href="#" class="hover:text-white transition">Twitter</a>
+                    <a href="#" class="hover:text-white transition">Instagram</a>
+                    <a href="#" class="hover:text-white transition">LinkedIn</a>
+                </div>
             </div>
         </div>
     </footer>

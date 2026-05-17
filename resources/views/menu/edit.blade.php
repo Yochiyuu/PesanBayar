@@ -1,45 +1,134 @@
-@extends('layouts.app')
+<x-app-layout>
+    <x-slot name="header">
+        <div class="flex justify-between items-center">
+            <h2 class="font-semibold text-xl text-gray-900 leading-tight">
+                {{ __('Edit Menu') }}
+            </h2>
+            <a href="{{ route('menu.index') }}"
+                class="text-sm font-semibold text-gray-600 hover:text-orange-500 transition">
+                &larr; Kembali
+            </a>
+        </div>
+    </x-slot>
 
-@section('content')
-    <div class="container mx-auto mt-10 max-w-2xl">
-        <h2 class="text-2xl font-bold mb-5">Edit Menu: {{ $menu->name }}</h2>
+    <div class="py-12">
+        <div class="max-w-2xl mx-auto sm:px-6 lg:px-8">
+            <div class="bg-white shadow-sm sm:rounded-xl border border-gray-100 p-8 sm:p-10">
+                <div class="mb-8">
+                    <h3 class="text-lg font-semibold text-gray-900">Ubah Detail Menu: <span
+                            class="text-orange-500">{{ $menu->name }}</span></h3>
+                    <p class="text-gray-500 text-sm mt-1">Perbarui informasi makanan atau minuman yang Anda jual.</p>
+                </div>
 
-        <form action="{{ route('menu.update', $menu->id) }}" method="POST" enctype="multipart/form-data"
-            class="bg-white p-6 rounded shadow-md">
-            @csrf
-            @method('PUT')
-            <div class="mb-4">
-                <label class="block text-gray-700 font-bold mb-2">Nama Menu</label>
-                <input type="text" name="name" value="{{ $menu->name }}" class="w-full border p-2 rounded" required>
+                <form method="POST" action="{{ route('menu.update', $menu->id) }}" enctype="multipart/form-data"
+                    class="space-y-6">
+                    @csrf
+                    @method('PUT')
+
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">Nama Menu</label>
+                        <input type="text" name="name" value="{{ old('name', $menu->name) }}" required
+                            class="block w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-orange-500 focus:border-orange-500 shadow-sm transition text-sm">
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">Kategori Menu</label>
+                        <input type="text" name="category"
+                            placeholder="Contoh: Makanan Utama, Minuman Segar, Cemilan"
+                            value="{{ old('category', $menu->category ?? 'Makanan Utama') }}" required
+                            class="block w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-orange-500 focus:border-orange-500 shadow-sm transition text-sm">
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">Harga Menu</label>
+                        <div class="relative rounded-lg shadow-sm">
+                            <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4">
+                                <span class="text-gray-400 font-semibold text-sm select-none">Rp</span>
+                            </div>
+
+                            <input type="text" id="price_display" required placeholder="0"
+                                value="{{ old('price', $menu->price) ? number_format(old('price', $menu->price), 0, ',', '.') : '' }}"
+                                class="block w-full pl-11 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-orange-500 focus:border-orange-500 transition text-sm">
+
+                            <input type="hidden" name="price" id="price_hidden"
+                                value="{{ old('price', $menu->price) }}">
+                        </div>
+                        <p class="text-xs text-gray-400 mt-1.5">Pemisah ribuan (titik) akan menyesuaikan otomatis saat
+                            Anda mengetik.</p>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">Status Ketersediaan</label>
+                        <select name="is_available"
+                            class="block w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-orange-500 focus:border-orange-500 shadow-sm transition text-sm">
+                            <option value="1"
+                                {{ old('is_available', $menu->is_available) == 1 ? 'selected' : '' }}>Tersedia (Aktif)
+                            </option>
+                            <option value="0"
+                                {{ old('is_available', $menu->is_available) == 0 ? 'selected' : '' }}>Habis (Stok
+                                Kosong)</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">Deskripsi Singkat</label>
+                        <textarea name="description" rows="3"
+                            class="block w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-orange-500 focus:border-orange-500 shadow-sm transition text-sm">{{ old('description', $menu->description) }}</textarea>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">Foto Menu</label>
+
+                        @if ($menu->image)
+                            <div
+                                class="mb-4 flex items-center gap-4 p-3 border border-gray-100 rounded-lg bg-gray-50/50">
+                                <img src="{{ asset('storage/' . $menu->image) }}" alt="Pratinjau Foto"
+                                    class="w-16 h-16 object-cover rounded-lg border border-gray-200 shadow-sm">
+                                <div class="text-xs text-gray-500">
+                                    <p class="font-semibold text-gray-700">Foto aktif saat ini</p>
+                                    <p>Biarkan kosong jika tidak ingin mengubah foto menu.</p>
+                                </div>
+                            </div>
+                        @endif
+
+                        <input type="file" name="image" accept="image/*"
+                            class="block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-orange-50 file:text-orange-700 hover:file:bg-orange-100 transition">
+                    </div>
+
+                    <div class="pt-4">
+                        <button type="submit"
+                            class="w-full bg-orange-500 text-white font-semibold py-3.5 rounded-lg shadow-sm hover:bg-orange-600 transition text-sm">
+                            Simpan Perubahan
+                        </button>
+                    </div>
+                </form>
             </div>
-
-            <div class="mb-4">
-                <label class="block text-gray-700 font-bold mb-2">Deskripsi</label>
-                <textarea name="description" class="w-full border p-2 rounded" rows="3">{{ $menu->description }}</textarea>
-            </div>
-
-            <div class="mb-4">
-                <label class="block text-gray-700 font-bold mb-2">Harga (Rp)</label>
-                <input type="number" name="price" value="{{ $menu->price }}" class="w-full border p-2 rounded" required
-                    min="0">
-            </div>
-
-            <div class="mb-4">
-                <label class="block text-gray-700 font-bold mb-2">Gambar Menu (Abaikan jika tidak ingin mengubah)</label>
-                <input type="file" name="image" class="w-full border p-2 rounded" accept="image/*">
-            </div>
-
-            <div class="mb-4">
-                <label class="inline-flex items-center">
-                    <input type="checkbox" name="is_available" class="form-checkbox"
-                        {{ $menu->is_available ? 'checked' : '' }}>
-                    <span class="ml-2">Tersedia untuk dipesan</span>
-                </label>
-            </div>
-
-            <button type="submit" class="bg-blue-500 text-white font-bold py-2 px-4 rounded hover:bg-blue-600">
-                Update Menu
-            </button>
-        </form>
+        </div>
     </div>
-@endsection
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const priceDisplay = document.getElementById('price_display');
+            const priceHidden = document.getElementById('price_hidden');
+
+            function formatRupiah(angka) {
+                let number_string = angka.toString().replace(/[^0-9]/g, ''),
+                    sisa = number_string.length % 3,
+                    rupiah = number_string.substr(0, sisa),
+                    ribuan = number_string.substr(sisa).match(/\d{3}/gi);
+
+                if (ribuan) {
+                    let separator = sisa ? '.' : '';
+                    rupiah += separator + ribuan.join('.');
+                }
+                return rupiah;
+            }
+
+            priceDisplay.addEventListener('input', function() {
+                let cleanValue = this.value.replace(/[^0-9]/g, '');
+                priceHidden.value = cleanValue;
+                this.value = formatRupiah(cleanValue);
+            });
+        });
+    </script>
+</x-app-layout>

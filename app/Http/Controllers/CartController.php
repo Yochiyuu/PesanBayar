@@ -8,8 +8,8 @@ use Illuminate\Http\Request;
 
 class CartController extends Controller
 {
-    // Menambahkan menu ke keranjang
-    public function add(Request $request, $menu_id)
+    // Menambahkan menu ke keranjang (Tambahkan tipe data 'string' pada $menu_id)
+    public function add(Request $request, string $menu_id)
     {
         $menu = Menu::findOrFail($menu_id);
         $cart = session()->get('cart', []);
@@ -32,8 +32,8 @@ class CartController extends Controller
         return redirect()->back()->with('success', 'Menu ditambahkan ke keranjang!');
     }
 
-    // Mengurangi atau menghapus menu dari keranjang
-    public function remove(Request $request, $menu_id)
+    // Mengurangi atau menghapus menu dari keranjang (Tambahkan tipe data 'string')
+    public function remove(Request $request, string $menu_id)
     {
         $cart = session()->get('cart');
 
@@ -50,17 +50,20 @@ class CartController extends Controller
     }
 
     // Halaman melihat isi keranjang sebelum checkout
-  public function index()
-{
-    $cart = session()->get('cart', []);
-    $total = 0;
-    $restaurant_id = null;
+    public function index()
+    {
+        $cart = session()->get('cart', []);
+        $total = 0;
+        $restaurant_id = null;
 
-    foreach($cart as $item) {
-        $total += $item['price'] * $item['quantity'];
-        $restaurant_id = $item['restaurant_id'];
+        foreach($cart as $item) {
+            $total += $item['price'] * $item['quantity'];
+            $restaurant_id = $item['restaurant_id'];
+        }
+
+        // PERBAIKAN: Gunakan pemanggilan simpel dan tambahkan query() agar Intelephense paham
+        $restaurant = $restaurant_id ? Restaurant::query()->find($restaurant_id) : null;
+
+        return view('cart.index', compact('cart', 'total', 'restaurant'));
     }
-
-    return view('cart.index', compact('cart', 'total', 'restaurant_id'));
-}
 }

@@ -5,54 +5,59 @@ namespace App\Http\Controllers;
 use App\Models\Order;
 use App\Models\OrderItem;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 
 class OrderController extends Controller
 {
-    public function store(Request $request, $restaurant_id)
+    // Fungsi untuk memproses checkout pesanan
+    public function store(Request $request, string $restaurant_id)
     {
-        $cart = session()->get('cart');
+        $request->validate([
+            'customer_name' => 'required|string|max:255',
+        ]);
 
-        if (!$cart) {
-            return redirect()->back()->with('error', 'Keranjang kosong.');
+        $cart = session()->get('cart', []);
+
+        if (empty($cart)) {
+            return redirect()->back()->with('error', 'Keranjang Anda masih kosong!');
         }
 
-        DB::beginTransaction();
+        // Hitung total harga untuk validasi keamanan (jangan percaya data dari frontend saja)
+        $totalPrice = 0;
+        foreach ($cart as $item) {
+            $totalPrice += $item['price'] * $item['quantity'];
+        }
 
-        try {
-            $order = Order::create([
-                'restaurant_id' => $restaurant_id,
-                'customer_name' => $request->customer_name,
-                'table_number' => $request->table_number,
-                'total_price' => array_sum(array_map(fn($item) => $item['price'] * $item['quantity'], $cart)),
-                'payment_status' => 'pending',
-                'order_status' => 'waiting',
+        // 1. Simpan data utama ke tabel 'orders'
+        $order = Order::query()->create([
+            'restaurant_id' => $restaurant_id,
+            'customer_name' => $request->customer_name,
+            'total_price'   => $totalPrice,
+            'status'        => 'pending', // Status awal pesanan: Menunggu/Pending
+        ]);
+
+        // 2. Simpan setiap menu ke tabel 'order_items'
+        foreach ($cart as $menu_id => $item) {
+            OrderItem::query()->create([
+                'order_id' => $order->id,
+                'menu_id'  => $menu_id,
+                'quantity' => $item['quantity'],
+                'price'    => $item['price'],
             ]);
-
-            foreach ($cart as $menu_id => $details) {
-                OrderItem::create([
-                    'order_id' => $order->id,
-                    'menu_id' => $menu_id,
-                    'quantity' => $details['quantity'],
-                    'price' => $details['price'],
-                ]);
-            }
-
-            DB::commit();
-
-            session()->forget('cart');
-
-            return redirect()->route('order.show', $order->id)->with('success', 'Pesanan berhasil dibuat!');
-
-        } catch (\Exception $e) {
-            DB::rollBack();
-            return redirect()->back()->with('error', 'Gagal memproses pesanan.');
         }
+
+        // 3. Kosongkan keranjang belanja karena sudah sukses dicheckout
+        session()->forget('cart');
+
+        // 4. Arahkan pelanggan ke halaman struk/nota digital pesanan mereka
+        return redirect()->route('order.show', $order->id)->with('success', 'Pesanan berhasil dibuat!');
     }
 
-    public function show($id)
+    // Fungsi untuk menampilkan struk/nota digital ke pelanggan
+    public function show(string $id)
     {
-        $order = Order::with('items.menu')->findOrFail($id);
+        // Ambil data order beserta relasi item, menu, dan restorannya
+        $order = Order::query()->with(['items.menu', 'restaurant'])->findOrFail($id);
+
         return view('order.show', compact('order'));
     }
 }
