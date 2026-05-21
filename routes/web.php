@@ -11,8 +11,19 @@ Route::get('/', function () {
     return view('welcome');
 });
 
-Route::get('/dashboard', function () {
-    return view('dashboard');
+Route::get('/dashboard', function (\Illuminate\Http\Request $request) {
+    $restaurant = $request->user()->restaurant;
+    $orders = collect();
+
+    if ($restaurant) {
+        $orders = \App\Models\Order::query()
+            ->with('items.menu')
+            ->where('restaurant_id', $restaurant->id)
+            ->latest()
+            ->get();
+    }
+
+    return view('dashboard', compact('restaurant', 'orders'));
 })->middleware(['auth', 'verified'])->name('dashboard');
 
 // RUTE KHUSUS PEMILIK RESTORAN (Wajib Login)
@@ -50,5 +61,6 @@ Route::get('/cart', [CartController::class, 'index'])->name('cart.index');
 // Checkout & Struk Pesanan
 Route::post('/order/{restaurant_id}', [OrderController::class, 'store'])->name('order.store');
 Route::get('/order/{id}', [OrderController::class, 'show'])->name('order.show');
+Route::patch('/order/{id}/status', [OrderController::class, 'updateStatus'])->name('order.update-status');
 
 require __DIR__.'/auth.php';
