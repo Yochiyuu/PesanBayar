@@ -5,7 +5,8 @@ namespace App\Http\Controllers;
 use App\Models\Order;
 use App\Models\OrderItem;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Session; // Tambahkan baris ini
+use Illuminate\Support\Facades\Session;
+use Illuminate\Support\Facades\DB; // Tambahkan facade DB untuk keamanan transaksi
 
 class OrderController extends Controller
 {
@@ -28,31 +29,42 @@ class OrderController extends Controller
             $totalPrice += $item['price'] * $item['quantity'];
         }
 
-        // 1. Simpan data utama ke tabel 'orders'
-        $order = Order::query()->create([
-            'restaurant_id'  => $restaurant_id,
-            'customer_name'  => $request->customer_name,
-            'table_number'   => 'N/A', 
-            'total_price'    => $totalPrice,
-            'payment_status' => 'unpaid',
-            'order_status'   => 'pending', 
-            'snap_token'     => null,
-        ]);
+        // MENGGUNAKAN DB TRANSACTION: Jika satu proses gagal (misal server error), semua dibatalkan
+        try {
+            DB::beginTransaction();
 
-        // 2. Simpan setiap menu ke tabel 'order_items'
-        foreach ($cart as $menu_id => $item) {
-            OrderItem::query()->create([
-                'order_id' => $order->id,
-                'menu_id'  => $menu_id,
-                'quantity' => $item['quantity'],
-                'price'    => $item['price'],
+            // 1. Simpan data utama ke tabel 'orders'
+            $order = Order::query()->create([
+                'restaurant_id'  => $restaurant_id,
+                'customer_name'  => $request->customer_name,
+                'table_number'   => 'N/A', 
+                'total_price'    => $totalPrice,
+                'payment_status' => 'unpaid',
+                'order_status'   => 'pending', 
+                'snap_token'     => null,
             ]);
+
+            // 2. Simpan setiap menu ke tabel 'order_items'
+            foreach ($cart as $menu_id => $item) {
+                OrderItem::query()->create([
+                    'order_id' => $order->id,
+                    'menu_id'  => $menu_id,
+                    'quantity' => $item['quantity'],
+                    'price'    => $item['price'],
+                ]);
+            }
+
+            // PERBAIKAN 2: Gunakan Facade Session
+            Session::forget('cart');
+
+            DB::commit(); // Konfirmasi dan simpan semua data secara permanen ke database
+
+            return redirect()->route('order.show', $order->id)->with('success', 'Pesanan berhasil dibuat!');
+
+        } catch (\Exception $e) {
+            DB::rollBack(); // Batalkan semua perubahan database jika terjadi error
+            return redirect()->back()->with('error', 'Terjadi kesalahan sistem saat memproses pesanan: ' . $e->getMessage());
         }
-
-        // PERBAIKAN 2: Gunakan Facade Session
-        Session::forget('cart');
-
-        return redirect()->route('order.show', $order->id)->with('success', 'Pesanan berhasil dibuat!');
     }
 
     // Fungsi untuk menampilkan struk/nota digital ke pelanggan

@@ -28,6 +28,10 @@
                             class="font-semibold text-gray-600 hover:text-orange-500 transition px-3 py-2 {{ request()->routeIs('menu.*') ? 'text-orange-500' : '' }}">
                             Kelola Menu
                         </a>
+                        <a href="{{ route('order.history') }}"
+                            class="font-semibold text-gray-600 hover:text-orange-500 transition px-3 py-2 {{ request()->routeIs('order.history') ? 'text-orange-500' : '' }}">
+                            Riwayat Pesanan
+                        </a>
                     @endauth
                 </div>
             </div>
@@ -113,6 +117,9 @@
                 </x-responsive-nav-link>
                 <x-responsive-nav-link :href="route('menu.index')" :active="request()->routeIs('menu.*')">
                     Kelola Menu
+                </x-responsive-nav-link>
+                <x-responsive-nav-link :href="route('order.history')" :active="request()->routeIs('order.history')">
+                    Riwayat Pesanan
                 </x-responsive-nav-link>
             </div>
             <div class="pt-4 pb-1 border-t border-gray-200">

@@ -19,6 +19,15 @@ Route::get('/dashboard', function (\Illuminate\Http\Request $request) {
         $orders = \App\Models\Order::query()
             ->with('items.menu')
             ->where('restaurant_id', $restaurant->id)
+            ->where(function($query) {
+                // Tampilkan yang masih pending & proses
+                $query->whereIn('order_status', ['pending', 'proses'])
+                      // ATAU yang selesai tapi belum lewat 5 menit (300 detik)
+                      ->orWhere(function($q) {
+                          $q->where('order_status', 'selesai')
+                            ->where('updated_at', '>=', now()->subMinutes(5));
+                      });
+            })
             ->latest()
             ->get();
     }
@@ -47,6 +56,31 @@ Route::middleware('auth')->group(function () {
     Route::get('/menu/{menu}/edit', [MenuController::class, 'edit'])->name('menu.edit');
     Route::put('/menu/{menu}/update', [MenuController::class, 'update'])->name('menu.update');
     Route::delete('/menu/{menu}/destroy', [MenuController::class, 'destroy'])->name('menu.destroy');
+
+    // Rute Riwayat Pesanan
+    Route::get('/riwayat-pesanan', function (\Illuminate\Http\Request $request) {
+        $restaurant = $request->user()->restaurant;
+        $historyOrders = collect();
+
+        if ($restaurant) {
+            $historyOrders = \App\Models\Order::query()
+                ->with('items.menu')
+                ->where('restaurant_id', $restaurant->id)
+                ->where(function($query) {
+                    // Tampilkan yang batal
+                    $query->where('order_status', 'batal')
+                          // ATAU yang selesai dan sudah lewat 5 menit
+                          ->orWhere(function($q) {
+                              $q->where('order_status', 'selesai')
+                                ->where('updated_at', '<', now()->subMinutes(5));
+                          });
+                })
+                ->latest()
+                ->get();
+        }
+
+        return view('order.history', compact('restaurant', 'historyOrders'));
+    })->name('order.history');
 });
 
 // RUTE PUBLIK PELANGGAN (Tanpa Login)
